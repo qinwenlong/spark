@@ -17,6 +17,7 @@
 package org.apache.spark.examples.sql
 
 import java.util.Properties
+import java.util.concurrent.TimeUnit
 
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.storage.StorageLevel
@@ -26,12 +27,18 @@ object SQLDataSourceExample {
   case class Person(name: String, age: Long)
 
   def main(args: Array[String]) {
+    // System.setProperty("hadoop.home.dir",
+    // "file:///D:\\hadoop-common-bin-master\\2.7.1")
     val spark = SparkSession
       .builder()
       .appName("Spark SQL data sources example")
       .config("spark.some.config.option", "some-value")
-      .master("local[2]")
+      // .enableHiveSupport()
+      // .master("local[2]")
       .getOrCreate()
+
+    // var peopleDF = spark.sql("SELECT * FROM people_bucketed");
+    //  peopleDF.show();
 
     // runBasicDataSourceExample(spark)
     // runBasicParquetExample(spark)
@@ -40,6 +47,7 @@ object SQLDataSourceExample {
     // runJdbcDatasetExample(spark)
     runCube2Example(spark)
 
+    TimeUnit.MINUTES.sleep(60);
     spark.stop()
   }
 
@@ -88,11 +96,12 @@ object SQLDataSourceExample {
       .mode("overwrite")
       .partitionBy("favorite_color")
       .bucketBy(42, "name")
+      // .format("json")
       .saveAsTable("users_partitioned_bucketed")
     // $example off:write_partition_and_bucket$
 
-    spark.sql("DROP TABLE IF EXISTS people_bucketed")
-    spark.sql("DROP TABLE IF EXISTS users_partitioned_bucketed")
+    // spark.sql("DROP TABLE IF EXISTS people_bucketed")
+    // spark.sql("DROP TABLE IF EXISTS users_partitioned_bucketed")
   }
 
   private def runBasicParquetExample(spark: SparkSession): Unit = {
@@ -244,7 +253,9 @@ object SQLDataSourceExample {
       .format("jdbc")
       .option("url", "jdbc:mysql://139.217.10.101:3306/bmw-cor_uat" +
         "?characterEncoding=UTF-8&zeroDateTimeBehavior=round")
-      .option("dbtable", "mtvehiclecube2")
+      // .option("dbtable", "mtvehiclecube2")
+      .option("dbtable", "(SELECT guid,stDealerCode as dealerCode,stCalculationPeriod as period" +
+      " FROM mtvehiclecube2 WHERE stDealerCode = 'DAC330010') cb2")
         // "CAST(stCalculationPeriod AS signed) as period" +
         // " FROM mtvehiclecube2 " +
         // "WHERE stDealerCode = 'DAC330010') cb2")
@@ -252,10 +263,10 @@ object SQLDataSourceExample {
       .option("fetchSize", "1000")
       .option("user", "dac")
       .option("password", "Ld7uKKmcy6Go37xBy4(Mk8m%Y2adU6$")
-       .option("partitionColumn", "REPLACE(stDealerCode,'DAC','')")
-       .option("lowerBound", "330001")
-       .option("upperBound", "330596")
-       .option("numPartitions", "596")
+      // .option("partitionColumn", "REPLACE(stDealerCode,'DAC','')")
+      // .option("lowerBound", "330001")
+      // .option("upperBound", "330596")
+       .option("numPartitions", "50")
       .load()
     // jdbcDF.show()
     jdbcDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
