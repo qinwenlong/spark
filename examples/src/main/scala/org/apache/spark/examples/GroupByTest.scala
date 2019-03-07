@@ -48,7 +48,7 @@ object GroupByTest {
       arr1
     }.cache()
     // Enforce that everything has been calculated and in cache
-    pairs1.count()
+    println(pairs1.count())
 
     println(pairs1.groupByKey(numReducers).count())
 

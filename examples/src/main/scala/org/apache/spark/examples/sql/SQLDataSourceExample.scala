@@ -27,8 +27,8 @@ object SQLDataSourceExample {
   case class Person(name: String, age: Long)
 
   def main(args: Array[String]) {
-    // System.setProperty("hadoop.home.dir",
-    // "file:///D:\\hadoop-common-bin-master\\2.7.1")
+    System.setProperty("hadoop.home.dir",
+      "D:\\Users\\wenlong.qin\\Downloads\\hadoop-common-2.6.0-bin-master")
     val spark = SparkSession
       .builder()
       .appName("Spark SQL data sources example")
@@ -215,7 +215,8 @@ object SQLDataSourceExample {
       .option("url", "jdbc\\:mysql\\://139.217.10.101\\:3306/bmw-cor_uat" +
         "?characterEncoding\\=UTF-8&zeroDateTimeBehavior\\=round")
       .option("dbtable", "(SELECT guid,stDealerCode as dealerCode,stCalculationPeriod as period" +
-        " FROM mtvehiclecube2 WHERE stDealerCode = 'DAC330010') cb2")
+        " FROM mtvehiclecube2 WHERE stCalculationYear = '2018' " +
+        " AND stCalculationPeriod = '10' AND stDealerCode = 'DAC330001') cb2")
       .option("user", "dac")
       .option("password", "Ld7uKKmcy6Go37xBy4(Mk8m%Y2adU6$")
       .load()
@@ -251,18 +252,19 @@ object SQLDataSourceExample {
   private def runCube2Example(spark: SparkSession): Unit = {
     val jdbcDF = spark.read
       .format("jdbc")
-      .option("url", "jdbc:mysql://139.217.10.101:3306/bmw-cor_uat" +
+      .option("url", "jdbc:mysql://40.125.173.215:3306/bmw-cor_uat" +
         "?characterEncoding=UTF-8&zeroDateTimeBehavior=round")
       // .option("dbtable", "mtvehiclecube2")
       .option("dbtable", "(SELECT guid,stDealerCode as dealerCode,stCalculationPeriod as period" +
-      " FROM mtvehiclecube2 WHERE stDealerCode = 'DAC330010') cb2")
+      " FROM mtvehiclecube2_currentperiod WHERE stCalculationYear = '2018' " +
+      " AND stCalculationPeriod = '09' AND stDealerCode = 'DAC330010') cb2")
         // "CAST(stCalculationPeriod AS signed) as period" +
         // " FROM mtvehiclecube2 " +
         // "WHERE stDealerCode = 'DAC330010') cb2")
       .option("driver", "com.mysql.jdbc.Driver")
       .option("fetchSize", "1000")
       .option("user", "dac")
-      .option("password", "Ld7uKKmcy6Go37xBy4(Mk8m%Y2adU6$")
+      .option("password", "U9NRyxMe2?*zRaqP4k79VBoAUXwwmXha$")
       // .option("partitionColumn", "REPLACE(stDealerCode,'DAC','')")
       // .option("lowerBound", "330001")
       // .option("upperBound", "330596")

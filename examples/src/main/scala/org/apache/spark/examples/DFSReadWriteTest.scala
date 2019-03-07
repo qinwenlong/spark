@@ -22,7 +22,11 @@ import java.io.File
 
 import scala.io.Source._
 
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
+
 import org.apache.spark.sql.SparkSession
+
 
 /**
  * Simple test for reading and writing to a distributed
@@ -41,6 +45,8 @@ object DFSReadWriteTest {
   private var dfsDirPath: String = ""
 
   private val NPARAMS = 2
+
+  private val hdfs : FileSystem = FileSystem.get(new Configuration)
 
   private def readFile(filename: String): List[String] = {
     val lineIter: Iterator[String] = fromFile(filename).getLines()
@@ -92,7 +98,23 @@ object DFSReadWriteTest {
       .sum
   }
 
-  def main(args: Array[String]): Unit = {
+  def exists(hdfs : FileSystem, name : String) : Boolean = {
+    hdfs.exists(new Path(name))
+  }
+
+  def deleteFile(hdfs : FileSystem, path: String) : Boolean = {
+    if (isDir(hdfs, path)) {
+      hdfs.delete(new Path(path), true)
+    } else {
+      hdfs.delete(new Path(path), false)
+    }
+  }
+
+    def isDir(hdfs : FileSystem, name : String) : Boolean = {
+      hdfs.isDirectory(new Path(name))
+    }
+
+    def main(args: Array[String]): Unit = {
     parseArgs(args)
 
     println("Performing local word count")
@@ -107,6 +129,9 @@ object DFSReadWriteTest {
 
     println("Writing local file to DFS")
     val dfsFilename = s"$dfsDirPath/dfs_read_write_test"
+    if (exists(hdfs, dfsFilename)) {
+     deleteFile(hdfs, dfsFilename)
+    }
     val fileRDD = spark.sparkContext.parallelize(fileContents)
     fileRDD.saveAsTextFile(dfsFilename)
 

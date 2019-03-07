@@ -34,6 +34,7 @@ object HdfsTest {
       .appName("HdfsTest")
       .getOrCreate()
     val file = spark.read.text(args(0)).rdd
+    println(file.count())
     val mapped = file.map(s => s.length).cache()
     for (iter <- 1 to 10) {
       val start = System.currentTimeMillis()
